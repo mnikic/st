@@ -103,6 +103,7 @@ void selclear(void);
 void selinit(void);
 void selstart(int, int, int);
 void selextend(int, int, int, int);
+int selextendto(int, int, int);
 int selected(int, int);
 char *getsel(void);
 

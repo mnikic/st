@@ -181,6 +181,7 @@ static void selnotify(XEvent *);
 static void selclear_(XEvent *);
 static void selrequest(XEvent *);
 static void setsel(char *, Time);
+static int mouseseltype(XEvent *);
 static void mousesel(XEvent *, int);
 static void mousereport(XEvent *);
 static char *kmap(KeySym, uint);
@@ -344,19 +345,23 @@ evrow(XEvent *e)
 	return y / win.ch;
 }
 
-void
-mousesel(XEvent *e, int done)
+int
+mouseseltype(XEvent *e)
 {
-	int type, seltype = SEL_REGULAR;
+	int type;
 	uint state = e->xbutton.state & ~(Button1Mask | forcemousemod);
 
 	for (type = 1; type < LEN(selmasks); ++type) {
-		if (match(selmasks[type], state)) {
-			seltype = type;
-			break;
-		}
+		if (match(selmasks[type], state))
+			return type;
 	}
-	selextend(evcol(e), evrow(e), seltype, done);
+	return SEL_REGULAR;
+}
+
+void
+mousesel(XEvent *e, int done)
+{
+	selextend(evcol(e), evrow(e), mouseseltype(e), done);
 	if (done)
 		setsel(getsel(), e->xbutton.time);
 }
@@ -485,6 +490,9 @@ bpress(XEvent *e)
 			} else {
 				kscrolldown(&a);
 			}
+			/* keep a selection being dragged under the pointer */
+			if (buttons & 1)
+				mousesel(e, 0);
 		}
 		return;
 	}
@@ -501,6 +509,11 @@ bpress(XEvent *e)
 		return;
 
 	if (btn == Button1) {
+		/* shift+click extends the current selection */
+		if ((e->xbutton.state & ShiftMask) && !IS_SET(MODE_MOUSE) &&
+		    selextendto(evcol(e), evrow(e), mouseseltype(e)))
+			return;
+
 		/*
 		 * If the user clicks below predefined timeouts specific
 		 * snapping behaviour is exposed.
