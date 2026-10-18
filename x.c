@@ -846,7 +846,7 @@ xloadcols(void)
 
 	dc.col[defaultbg].color.alpha = (unsigned short)(0xffff * alpha);
 	dc.col[defaultbg].pixel &= 0x00FFFFFF;
-	dc.col[defaultbg].pixel |= (unsigned char)(0xff * alpha) << 24;
+	dc.col[defaultbg].pixel |= (unsigned long)(unsigned char)(0xff * alpha) << 24;
 	loaded = 1;
 }
 
@@ -880,7 +880,7 @@ xsetcolorname(int x, const char *name)
 	if (x == defaultbg) {
 		dc.col[defaultbg].color.alpha = (unsigned short)(0xffff * alpha);
 		dc.col[defaultbg].pixel &= 0x00FFFFFF;
-		dc.col[defaultbg].pixel |= (unsigned char)(0xff * alpha) << 24;
+		dc.col[defaultbg].pixel |= (unsigned long)(unsigned char)(0xff * alpha) << 24;
 	}
 
 	return 0;
